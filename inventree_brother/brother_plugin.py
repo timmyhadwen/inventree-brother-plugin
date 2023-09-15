@@ -187,6 +187,6 @@ class BrotherLabelPlugin(LabelPrintingMixin, SettingsMixin, InvenTreePlugin):
         send(
             instructions=instructions,
             printer_identifier='/dev/usb/lp0',
-            backend_identifier='network',
+            backend_identifier='linux_kernel',
             blocking=True
         )
