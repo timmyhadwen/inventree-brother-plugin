@@ -73,9 +73,20 @@ class BrotherLabelPlugin(LabelPrintingMixin, SettingsMixin, InvenTreePlugin):
             'choices': get_label_choices,
             'default': '12',
         },
+        'NETWORK_PRINTER': {
+            'name': _('Network Printer'),
+            'description': _('Check if this is a network printer, for usb leave unchecked'),
+            'validator': bool,
+            'default': True,
+        },
         'IP_ADDRESS': {
             'name': _('IP Address'),
             'description': _('IP address of the brother label printer'),
+            'default': '',
+        },
+        'USB_PATH': {
+            'name': _('USB Path'),
+            'description': _('for example /dev/usb/lp0'),
             'default': '',
         },
         'AUTO_CUT': {
@@ -131,6 +142,7 @@ class BrotherLabelPlugin(LabelPrintingMixin, SettingsMixin, InvenTreePlugin):
         # Read settings
         model = self.get_setting('MODEL')
         ip_address = self.get_setting('IP_ADDRESS')
+        usb_path = self.get_setting('USB_PATH')
         media_type = self.get_setting('LABEL')
 
         # Get specifications of media type
@@ -184,9 +196,18 @@ class BrotherLabelPlugin(LabelPrintingMixin, SettingsMixin, InvenTreePlugin):
 
         instructions = convert(**params)
 
-        send(
-            instructions=instructions,
-            printer_identifier=f'/dev/usb/lp0',
-            backend_identifier='network',
-            blocking=True
-        )
+        if self.get_setting('NETWORK_PRINTER'):
+            send(
+                instructions=instructions,
+                printer_identifier=f'tcp://{ip_address}',
+                backend_identifier='network',
+                blocking=True
+            )
+        else:
+            send(
+                instructions=instructions,
+                printer_identifier=f'{usb_path}',
+                backend_identifier='linux_kernel',
+                blocking=True
+            )
+        
